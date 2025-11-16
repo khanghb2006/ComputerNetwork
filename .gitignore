@@ -1,0 +1,31 @@
+# Ignore everything
+*!.gitignore
+
+# Allow only:
+!Server/
+!Server/include/
+!Server/src/
+
+# Block build dirs
+Server/x64/
+Server/Debug/
+Server/Release/
+Server/.vs/
+Server/v17/
+Server/ipch/
+
+# Ignore Visual Studio garbage
+*.pdb
+*.ipch
+*.obj
+*.tlog
+*.ilk
+*.suo
+
+# Ignore binaries
+*.dll
+*.exe
+*.lib
+*.exp
+*.mp4
+*.avi
