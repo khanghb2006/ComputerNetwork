@@ -1,14 +1,13 @@
 #include "../../include/Commands/StopApplicationCommand.h"
 
 std::string StopApplicationCommand::execute(const std::string& args) {
-    try {
-        int pid = std::stoi(args);
-        if (app->stopApplication(pid)) {
-            return "Success: Stopped application with PID " + args;
-        } else {
-            return "Failed: Could not stop application " + args;
-        }
-    } catch (...) {
-        return "Error: Invalid PID format.";
+    if (args.empty()) {
+        return "Error: Please specify the application name or path to stop.";
+    }
+    bool success = app->stopApplication(args);
+    if (success) {
+        return "Success: Application '" + args + "' has been stopped.";
+    } else {
+        return "Error: Could not stop application '" + args + "'. It may not be running or Access is Denied.";
     }
 }

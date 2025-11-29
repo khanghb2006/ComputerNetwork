@@ -66,8 +66,24 @@ std::optional<int> Application_Windows::startApplication(const std::string& appl
     return startApplicationWindows(appW, argsW);
 }
 
-bool Application_Windows::stopApplication(int pid) {
-    return stopApplicationWindows(pid);
+bool Application_Windows::stopApplication(const std::string& appNameOrPath) {
+    if(appNameOrPath.empty()) return false;
+
+    // Step 1: Get running applications list 
+    std::vector<ProcessInfo> runningApps = listApplicationWindows();
+    // Step 2: Find application of the provided path
+    for(const auto& proc : runningApps) {
+        // Compare:
+        // - proc.name(): ex "notepad.exe"
+        // - proc.name(): ex "C:\Windows\System32\notepad.exe"
+        // - appNameOrPath: string entered by users
+        if(proc.name() == appNameOrPath || proc.path() == appNameOrPath) {
+            // Found -> kill by function
+            return killAppicationsByID(proc.pid());
+        } 
+    }
+
+    return false;
 }
 
 std::vector<ProcessInfo> Application_Windows::listApplication() {
@@ -159,7 +175,7 @@ std::optional<int> Application_Windows::startApplicationWindows(const std::wstri
     return pid;
 }
 
-bool Application_Windows::stopApplicationWindows(int pid) {
+bool Application_Windows::killAppicationsByID(int pid) {
     if (pid <= 0) return false;
 
     // Get a handle to the process with PROCESS_TERMINATE rights

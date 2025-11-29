@@ -36,12 +36,11 @@ int main() {
     // Print usage instructions
     std::cout << "=== APPLICATION MANAGER CLI ===\n";
     std::cout << "Available commands:\n";
-    std::cout << " 1. list              : List all running applications\n";
-    std::cout << " 2. start <path>      : Start an application (e.g., start notepad.exe)\n";
-    std::cout << " 3. stop <pid>        : Stop an application by PID (e.g., stop 1234)\n";
+    std::cout << " 1. list              : List all running applications in to file text\n";
+    std::cout << " 2. start [path]      : Start an application (e.g., start notepad.exe)\n";
+    std::cout << " 3. stop [path]       : Stop an application by PID (e.g., stop 1234)\n";
     std::cout << " 4. screenshot [path] : Take a screenshot (e.g., screenshot myimage.bmp)\n";
-    std::cout << " 5. export [path]     : Export list to file (e.g., export list.txt)\n";
-    std::cout << " 6. exit              : Exit the program\n";
+    std::cout << " 5. exit              : Exit the program\n";
     std::cout << "===============================\n";
 
     // 2. Main loop

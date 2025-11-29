@@ -15,14 +15,14 @@ public:
     // These functions override the pure virtual functions from the Application base class.
     std::vector<ProcessInfo> listApplication() override;
     std::optional<int> startApplication(const std::string& application, const std::string& args = "") override;
-    bool stopApplication(int pid) override;
+    bool stopApplication(const std::string& appNameOrPath) override;
     bool exportApplicationToFile(const std::string& filepath) override;
 
 private:
     // These functions contain the actual Win32 API calls.
     std::vector<ProcessInfo> listApplicationWindows();
     std::optional<int> startApplicationWindows(const std::wstring& applicationW, const std::wstring& argsW);
-    bool stopApplicationWindows(int pid);
+    bool killAppicationsByID(int pid);
 
     static std::string GetLastErrorString(DWORD err = 0);
 };
