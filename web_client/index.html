@@ -1,0 +1,138 @@
+<!-- <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remote Control Panel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🖥️ Remote System Manager</h1>
+        <div id="connection-status" class="status-disconnected">Core: Disconnected</div>
+    </header>
+
+    <main>
+        <div class="command-section" id="process-control">
+            <h2>1. Process & Key Control</h2>
+            <button onclick="sendCommand('process list')">List Processes</button>
+            <hr>
+            
+            <label for="pid-kill">PID to Kill:</label>
+            <input type="text" id="pid-kill" placeholder="e.g., 1234">
+            <button onclick="sendCommand('process kill', document.getElementById('pid-kill').value)">Kill Process</button>
+            
+            <label for="path-start">Path/App to Start:</label>
+            <input type="text" id="path-start" placeholder="e.g., C:\Windows\notepad.exe">
+            <button onclick="sendCommand('process start', document.getElementById('path-start').value)">Start Process</button>
+            <hr>
+            
+            <button onclick="sendCommand('key start')">Start Key Capture</button>
+            <button onclick="sendCommand('key stop')">Stop Key Capture</button>
+            <button onclick="sendCommand('key dump')">Dump Keys to file</button>
+        </div>
+
+        <div class="command-section" id="utility-control">
+            <h2>2. Utility & Power Control</h2>
+            <button onclick="sendCommand('system shutdown')">Shutdown System</button>
+            <button onclick="sendCommand('system restart')">Restart System</button>
+            <hr>
+            <button onclick="sendCommand('screenshot capture')">Capture Screenshot</button>
+            <button onclick="sendCommand('webcam start')">Start Webcam Stream</button>
+        </div>
+
+        <div class="output-section">
+            <h2>Kết quả & Logs</h2>
+            <pre id="output-log"></pre>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🖥️ Remote System Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🖥️ Remote System Manager</h1>
+        <div id="connection-status" class="status-disconnected">Core: Disconnected</div>
+    </header>
+
+    <main>
+        <div class="control-panel">
+            <div class="command-section" id="process-control">
+                <h2><i class="fas fa-microchip"></i> 1. Process Control</h2>
+                <button onclick="sendCommand('process list')"><i class="fas fa-list-ul"></i> List Processes</button>
+                <hr>
+                
+                <label for="pid-kill">PID to Kill:</label>
+                <input type="text" id="pid-kill" placeholder="e.g., 1234">
+                <button class="danger" onclick="sendCommand('process kill', document.getElementById('pid-kill').value)"><i class="fas fa-skull-crossbones"></i> Kill Process</button>
+                
+                <label for="path-start">Path/App to Start:</label>
+                <input type="text" id="path-start" placeholder="e.g., C:\Windows\notepad.exe">
+                <button class="primary" onclick="sendCommand('process start', document.getElementById('path-start').value)"><i class="fas fa-play"></i> Start Process</button>
+            </div>
+
+            <div class="command-section" id="key-control">
+                <h2><i class="fas fa-keyboard"></i> 2. Keylogger Control</h2>
+                <button class="primary" onclick="sendCommand('key start')"><i class="fas fa-record-vinyl"></i> Start Capture</button>
+                <button class="warning" onclick="sendCommand('key stop')"><i class="fas fa-stop"></i> Stop Capture</button>
+                <button onclick="sendCommand('key dump')"><i class="fas fa-save"></i> Dump to Server File</button>
+            </div>
+            
+            <div class="command-section" id="utility-control">
+                <h2><i class="fas fa-tools"></i> 3. Utility & Power Control</h2>
+                <button class="danger" onclick="sendCommand('system shutdown')"><i class="fas fa-power-off"></i> Shutdown System</button>
+                <button class="danger" onclick="sendCommand('system restart')"><i class="fas fa-sync-alt"></i> Restart System</button>
+                <hr>
+                <button onclick="sendCommand('screenshot capture')"><i class="fas fa-camera"></i> Capture Screenshot</button>
+                <button onclick="sendCommand('webcam start')"><i class="fas fa-video"></i> Start Webcam Stream</button>
+            </div>
+        </div>
+        
+        <div class="data-view-area">
+            <div class="data-section" id="key-output">
+                <h2>⌨️ Keylogger Output</h2>
+                <button onclick="document.getElementById('key-log').textContent = '';" class="clear-button"><i class="fas fa-eraser"></i> Clear Log</button>
+                <pre id="key-log"></pre>
+            </div>
+            
+            <div class="data-section" id="system-log">
+                <h2>⚙️ System Log</h2>
+                <button onclick="document.getElementById('system-log-output').textContent = '';" class="clear-button"><i class="fas fa-eraser"></i> Clear Log</button>
+                <pre id="system-log-output"></pre>
+            </div>
+        </div>
+        
+        <div class="process-list-section">
+            <h2><i class="fas fa-clipboard-list"></i> Process List</h2>
+            <div class="table-container">
+                <table id="process-table">
+                    <thead>
+                        <tr>
+                            <th>PID</th>
+                            <th>Process Name</th>
+                            <th>Memory (MB)</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
