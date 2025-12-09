@@ -1,0 +1,131 @@
+/* Tùy chỉnh Layout Chính */
+main.master-detail-layout {
+    display: grid;
+    /* Sidebar (250px) | Content Area (phần còn lại) */
+    grid-template-columns: 250px 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1400px;
+    margin: 20px auto;
+}
+
+/* Sidebar (Menu Trái) */
+.sidebar {
+    grid-column: 1 / 2;
+    background-color: var(--bg-card);
+    padding: 20px 10px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    height: fit-content; /* Giữ sidebar nhỏ gọn */
+}
+.sidebar h2 {
+    font-size: 1.2em;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+.menu-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 12px 15px;
+    margin: 5px 0;
+    text-align: left;
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+    font-size: 1em;
+    transition: background-color 0.2s, color 0.2s;
+    border-radius: 8px;
+}
+.menu-btn i {
+    width: 25px;
+    text-align: center;
+    margin-right: 10px;
+}
+.menu-btn:hover {
+    background-color: #333;
+}
+.menu-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+.menu-btn.active:hover {
+    background-color: var(--primary-color);
+}
+.menu-btn.danger { background-color: var(--danger-color); }
+.menu-btn.danger:hover { background-color: #b32a2a; }
+
+
+/* Khu vực Nội dung (Phần bên phải) */
+.content-area {
+    grid-column: 2 / 3;
+    display: flex; /* Chỉ để flex cho việc chứa content-view */
+    flex-direction: column;
+}
+.content-view {
+    background-color: var(--bg-card);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px var(--shadow-color);
+    display: none; /* Ẩn tất cả views trừ active */
+    min-height: 70vh;
+}
+.content-view.active {
+    display: block;
+}
+
+/* Cấu trúc Cân bằng cho Application/Process View */
+.app-control-grid {
+    display: grid;
+    /* Chia 3 cột: List (1.5 phần) | Start/Stop (1 phần) | Log (1 phần) */
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+.control-box {
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #252525;
+}
+.control-box h3 {
+    color: var(--info-color);
+    margin-top: 0;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+}
+
+/* Các Button Lớn (System) */
+.large-btn {
+    padding: 20px;
+    font-size: 1.2em;
+    margin-top: 15px;
+    width: 48%;
+}
+.full-width {
+    width: 100%;
+}
+
+/* Khu vực Hiển thị Truyền thông (Screenshot/Webcam) */
+.media-viewer {
+    min-height: 400px;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--text-secondary);
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+/* Log Container (System Log/Key Log) */
+.log-container {
+    margin-top: 20px;
+}
+.log-container h3 {
+    margin-top: 0;
+}
+
+/* Giữ nguyên các styles cơ bản khác (buttons, table, log outputs) */

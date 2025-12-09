@@ -29,18 +29,16 @@ private:
 
 class ApplicationManager {
 public:
-    static std::vector<ApplicationInfo> listApplication();
-
+    static std::vector<ApplicationInfo> listApplication(); 
     static std::optional<int> startApplication(const std::string& application, const std::string& args = "");
     static bool stopApplication(const std::string& appNameOrPath);
-    static bool exportApplicationToFile(const std::string& filepath);
 
 #ifdef _WIN32
-private:
+public:
     static std::vector<ApplicationInfo> listApplicationWindows();
     static std::optional<int> startApplicationWindows(const std::wstring& applicationW, const std::wstring& argsW);
     static bool killAppicationsByID(int pid);
-
+    static std::vector<ApplicationInfo> listAllInstalledApplicationsFromRegistry();
     static std::wstring utf8_to_wstring(const std::string& s);
     static std::string wstring_to_utf8(const std::wstring& w);
     static std::set<DWORD> GetWindowOwnerPIDs();

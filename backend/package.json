@@ -1,0 +1,13 @@
+{
+  "name": "web_backend",
+  "version": "1.0.0",
+  "description": "Proxy Server connecting Web Client to C++ Agent.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "ws": "^8.18.3"
+  }
+}

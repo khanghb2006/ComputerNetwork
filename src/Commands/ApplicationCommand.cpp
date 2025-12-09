@@ -1,78 +1,69 @@
-// ApplicationCommand.cpp
-// Giả định file này nằm trong src/Commands/
-#include "../../include/Commands/ApplicationCommand.h" 
+#include "../../include/Commands/ApplicationCommand.h"
 #include <sstream>
-#include <fstream> // Để sử dụng ofstream
+#include <iostream>
+#include <vector>
+
+// Hàm dọn dẹp chuỗi JSON
+std::string escapeJson(const std::string& s) {
+    std::string res;
+    for (char c : s) {
+        if (c == '\\') res += "\\\\";
+        else if (c == '"') res += "\\\"";
+        else if (c == '\n' || c == '\r') res += " ";
+        else if (c >= 32 && c <= 126) res += c; // Chỉ lấy ký tự in được
+        else res += '?';
+    }
+    return res;
+}
 
 std::string ApplicationCommand::execute(const std::string& args) {
-    if (args.empty()) {
-        return "[Application] Missing command action (list, start, stop).";
-    }
-
     std::stringstream ss(args);
     std::string action;
-    ss >> action; // Lấy từ đầu tiên làm action
+    ss >> action; 
 
-    // --- 1. LIST APPLICATION ---
+    // --- LIST COMMAND ---
     if (action == "list") {
-        // Tái tạo logic từ ListApplicationCommand.cpp và hình ảnh ProcessCommand.
+        // Lấy danh sách nhưng KHÔNG in ra Console của Server để tránh rác
+        std::vector<ApplicationInfo> list = ApplicationManager::listApplication(); 
         
-        // Sử dụng hàm exportApplicationToFile để lưu file.
-        std::string defaultFile = "runningApp.txt";
-        bool success = ApplicationManager::exportApplicationToFile(defaultFile); // Gọi hàm tĩnh
+        std::stringstream json;
+        json << "{\"type\":\"PROCESS_LIST\",\"data\":[";
         
-        if (success) {
-            return "[Application] Success: List of running applications has been saved to '" + defaultFile + "'.";
-        } else {
-            return "[Application] Failed: Failed to save application list to '" + defaultFile + "'.";
-        }
-    }
+        bool first = true;
+        for (const auto& app : list) {
+            if (app.name().empty()) continue;
 
-    // --- 2. START APPLICATION ---
+            if (!first) json << ",";
+            json << "{";
+            json << "\"pid\":" << app.pid() << ",";
+            json << "\"name\":\"" << escapeJson(app.name()) << "\",";
+            json << "\"path\":\"" << escapeJson(app.path()) << "\""; 
+            json << "}";
+            first = false;
+        }
+        json << "]}";
+        
+        // Chỉ trả về chuỗi JSON sạch
+        return "JSON_LIST:" + json.str(); 
+    }
+    
+    // --- START COMMAND ---
     if (action == "start") {
         std::string path;
-        // Lấy phần còn lại của chuỗi, bỏ qua khoảng trắng đầu
         if (ss.peek() == ' ') ss.ignore(1);
         std::getline(ss, path); 
-
-        if (path.empty()) {
-            return "[Application] Missing file path to start.";
-        }
-
-        // Tái tạo logic từ StartApplicationCommand.cpp
-        // startApplication(const std::string& application, const std::string& args = "")
-        // Ở đây, chúng ta chỉ truyền path và args rỗng (nếu args không được truyền vào theo format start <path> [args])
-        
-        auto pidOpt = ApplicationManager::startApplication(path); // Gọi hàm tĩnh
-        
-        if (pidOpt) {
-            return "[Application] Success: Started application with PID: " + std::to_string(*pidOpt);
-        } else {
-            return "[Application] Failed: Could not start application: " + path;
-        }
+        auto pidOpt = ApplicationManager::startApplication(path);
+        return pidOpt ? "CMD_MSG:Started PID " + std::to_string(*pidOpt) : "CMD_MSG:Start Failed";
     }
 
-    // --- 3. STOP APPLICATION ---
+    // --- STOP COMMAND ---
     if (action == "stop") {
-        std::string appNameOrPath;
-        // Lấy phần còn lại của chuỗi, bỏ qua khoảng trắng đầu
+        std::string target;
         if (ss.peek() == ' ') ss.ignore(1);
-        std::getline(ss, appNameOrPath); 
-        
-        if (appNameOrPath.empty()) {
-            return "[Application] Error: Please specify the application name or path to stop.";
-        }
-
-        // Tái tạo logic từ StopApplicationCommand.cpp
-        bool success = ApplicationManager::stopApplication(appNameOrPath); // Gọi hàm tĩnh
-        
-        if (success) {
-            return "[Application] Success: Application '" + appNameOrPath + "' has been stopped.";
-        } else {
-            return "[Application] Error: Could not stop application '" + appNameOrPath + "'. It may not be running or Access is Denied.";
-        }
+        std::getline(ss, target); 
+        bool ok = ApplicationManager::stopApplication(target); 
+        return ok ? "CMD_MSG:Stopped " + target : "CMD_MSG:Stop Failed";
     }
-
-    // --- 4. UNKNOWN COMMAND ---
-    return "[Application] Unknown application command action: " + action;
+    
+    return "CMD_MSG:Unknown command";
 }

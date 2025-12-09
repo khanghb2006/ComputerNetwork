@@ -7,7 +7,7 @@
 #include <iomanip>
 #include <Psapi.h>  
 #include <fstream>
-
+#include <algorithm>
 using namespace std;
 
 // --- STATIC HELPER FUNCTIONS ---
@@ -147,63 +147,193 @@ bool ApplicationManager::killAppicationsByID(int pid) {
     return ok == TRUE;
 }
 
+void EnumerateRegistryKey(HKEY hBaseKey, const std::wstring& subPath, std::vector<ApplicationInfo>& out) {
+    HKEY hKey;
+    if (RegOpenKeyExW(hBaseKey, subPath.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        DWORD index = 0;
+        WCHAR subkeyName[256];
+        DWORD subkeyNameSize;
+
+        while (true) {
+            subkeyNameSize = sizeof(subkeyName) / sizeof(WCHAR);
+            if (RegEnumKeyExW(hKey, index++, subkeyName, &subkeyNameSize, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
+                break;
+            }
+
+            HKEY hSubKey;
+            if (RegOpenKeyExW(hKey, subkeyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
+                
+                // Đọc DisplayName (Tên ứng dụng)
+                WCHAR displayName[256];
+                DWORD displayNameSize = sizeof(displayName);
+                DWORD type = 0;
+                
+                if (RegQueryValueExW(hSubKey, L"DisplayName", NULL, &type, (LPBYTE)displayName, &displayNameSize) == ERROR_SUCCESS) {
+                    
+                    WCHAR path[MAX_PATH] = L"";
+                    DWORD size = sizeof(path);
+                    bool pathFound = false;
+
+                    // 1. Ưu tiên đọc DisplayIcon (Thường là đường dẫn EXE. Ví dụ: C:\Chrome\chrome.exe,0)
+                    if (RegQueryValueExW(hSubKey, L"DisplayIcon", NULL, &type, (LPBYTE)path, &size) == ERROR_SUCCESS) {
+                        
+                        // Cắt chuỗi nếu DisplayIcon chứa chỉ mục (ví dụ: "C:\App\app.exe,0")
+                        std::wstring pathW = path;
+                        size_t commaPos = pathW.find(L',');
+                        if (commaPos != std::wstring::npos) {
+                            pathW = pathW.substr(0, commaPos);
+                            wcscpy(path, pathW.c_str());
+                        }
+                        pathFound = true;
+                    }
+                    
+                    // 2. Nếu vẫn không có đường dẫn EXE, thử đọc InstallLocation 
+                    //    (Thường là thư mục cài đặt, không phải file EXE)
+                    if (!pathFound) {
+                        size = sizeof(path);
+                        RegQueryValueExW(hSubKey, L"InstallLocation", NULL, &type, (LPBYTE)path, &size);
+                        // pathFound = true; // Không chắc chắn là EXE, nhưng vẫn ghi nhận
+                    }
+
+                    // 3. Nếu vẫn không có, thử đọc UninstallString 
+                    if (path[0] == L'\0') {
+                        size = sizeof(path);
+                        RegQueryValueExW(hSubKey, L"UninstallString", NULL, &type, (LPBYTE)path, &size);
+                        // Cắt bỏ phần uninstaller.exe
+                        // Logic phức tạp, tạm thời ưu tiên DisplayIcon và InstallLocation
+                    }
+
+                    // Thêm vào kết quả
+                    out.emplace_back(
+                        0, // PID = 0
+                        ApplicationManager::wstring_to_utf8(displayName),
+                        ApplicationManager::wstring_to_utf8(path)
+                    );
+                }
+                RegCloseKey(hSubKey);
+            }
+        }
+        RegCloseKey(hKey);
+    }
+}
+
+
+std::vector<ApplicationInfo> ApplicationManager::listAllInstalledApplicationsFromRegistry() {
+    std::vector<ApplicationInfo> out;
+    const std::wstring subPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall";
+
+    // 1. HKEY_LOCAL_MACHINE (64-bit)
+    EnumerateRegistryKey(HKEY_LOCAL_MACHINE, subPath, out);
+
+    // 2. HKEY_LOCAL_MACHINE (32-bit trên 64-bit OS)
+    EnumerateRegistryKey(HKEY_LOCAL_MACHINE, L"Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall", out);
+
+    // 3. HKEY_CURRENT_USER (Ứng dụng cá nhân)
+    EnumerateRegistryKey(HKEY_CURRENT_USER, subPath, out);
+
+    return out;
+}
+
 // --- PUBLIC INTERFACE IMPLEMENTATION ---
 
 // Trả về vector<ApplicationInfo>
 std::vector<ApplicationInfo> ApplicationManager::listApplication() {
-    return listApplicationWindows();
+    return listAllInstalledApplicationsFromRegistry();
 }
 
 std::optional<int> ApplicationManager::startApplication(const std::string& application, const std::string& args) {
     std::wstring appW = utf8_to_wstring(application);
     std::wstring argsW = utf8_to_wstring(args);
-    return startApplicationWindows(appW, argsW);
+    
+    // Nếu path không chứa đường dẫn (ví dụ: chỉ là 'spotify'), Windows sẽ tìm trong PATH môi trường.
+    // Lỗi xảy ra vì logic startApplicationWindows của bạn yêu cầu đường dẫn tuyệt đối hoặc lệnh hệ thống.
+    
+    // Tạo CMD line để Windows tự xử lý (tương tự ShellExecute)
+    std::wstring cmdline = L"cmd /c start "; // Sử dụng CMD để Windows tìm file
+    cmdline += appW;
+    if (!argsW.empty()) {
+        cmdline += L" ";
+        cmdline += argsW;
+    }
+
+    std::vector<wchar_t> cmdBuf(cmdline.begin(), cmdline.end());
+    cmdBuf.push_back(L'\0');
+    
+    STARTUPINFOW si;
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
+    ZeroMemory(&pi, sizeof(pi));
+    
+    // Sử dụng nullptr cho lpApplicationName để Windows tự tìm lệnh 'cmd'
+    BOOL ok = CreateProcessW(nullptr, cmdBuf.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
+
+    if (!ok) {
+        return std::nullopt;
+    }
+    // ... (Trả về PID)
+    CloseHandle(pi.hThread);
+    int pid = static_cast<int>(pi.dwProcessId);
+    CloseHandle(pi.hProcess);
+    return pid;
+}
+
+std::string toLower(const std::string& str) {
+    std::string lowerStr = str;
+    std::transform(lowerStr.begin(), lowerStr.end(), lowerStr.begin(), ::tolower);
+    return lowerStr;
 }
 
 bool ApplicationManager::stopApplication(const std::string& appNameOrPath) {
-    if(appNameOrPath.empty()) return false;
+    if (appNameOrPath.empty()) return false;
 
-    // 1. Lấy danh sách ứng dụng đang chạy
-    std::vector<ApplicationInfo> runningApps = listApplicationWindows();
+    // Chuẩn bị Input: Chuyển input của người dùng sang chữ thường
+    std::string lowerInput = toLower(appNameOrPath); 
+    bool processTerminated = false; // Biến theo dõi xem có process nào bị dừng chưa
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) return false;
+
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
     
-    // 2. Tìm và đóng ứng dụng
-    for(const auto& app : runningApps) {
-        // So sánh theo tên hoặc đường dẫn
-        if(app.name() == appNameOrPath || app.path() == appNameOrPath) {
-            return killAppicationsByID(app.pid());
-        } 
-    }
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            // Lấy Tên file và chuyển sang chữ thường
+            std::string currentName = wstring_to_utf8(pe.szExeFile);
+            std::string lowerCurrentName = toLower(currentName);
 
-    return false;
+            // 1. Logic lấy Full Path
+            std::string currentPath = "[unknown]"; 
+            HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ProcessID);
+            
+            if (hProcess != NULL) {
+                WCHAR szPath[MAX_PATH];
+                DWORD dwSize = MAX_PATH;
+                if (QueryFullProcessImageNameW(hProcess, 0, szPath, &dwSize)) {
+                    currentPath = wstring_to_utf8(szPath);
+                }
+                CloseHandle(hProcess);
+            }
+            
+            // Chuyển Path của hệ thống sang chữ thường
+            std::string lowerCurrentPath = toLower(currentPath);
+            
+            // 2. So sánh KHÔNG PHÂN BIỆT CHỮ HOA/THƯỜNG
+            // Kiểm tra: Tên file EXE hoặc Đường dẫn đầy đủ có khớp với input không
+            if (lowerCurrentName == lowerInput || lowerCurrentPath == lowerInput) {
+                
+                if (killAppicationsByID(static_cast<int>(pe.th32ProcessID))) {
+                    processTerminated = true; // Đánh dấu đã dừng thành công
+                }
+                // KHÔNG return ngay lập tức để tìm và dừng các process trùng tên/path khác
+            }
+        } while (Process32NextW(snap, &pe));
+    }
+    
+    CloseHandle(snap);
+    return processTerminated; // Trả về true nếu ít nhất một process bị dừng
 }
-
-bool ApplicationManager::exportApplicationToFile(const std::string& filepath) {
-	// 1. Mở file để ghi
-    std::ofstream outFile(filepath);
-    if (!outFile.is_open()) {
-        return false;
-    }
-
-	// 2. Lấy danh sách ứng dụng
-    auto list = ApplicationManager::listApplicationWindows();
-
-	// 3. Ghi thông tin header
-    outFile << "=== APPLICATION LIST ===\n";
-    outFile << "Found " << list.size() << " windowed applications:\n\n";
-
-	// 4. Ghi chi tiết từng ứng dụng
-    for (const auto& app : list) {
-        outFile << "PID: " << app.pid() << "\n";
-        outFile << "  Name: " << app.name() << "\n";
-        outFile << "  Path: " << app.path() << "\n";
-        outFile << "---------------------------------\n";
-    }
-
-    outFile.close();
-    return true;
-}
-
-// [GetLastErrorString không cần thay đổi tên]
 
 std::string ApplicationManager::GetLastErrorString(DWORD err) {
     if (err == 0) err = GetLastError();

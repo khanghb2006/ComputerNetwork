@@ -12,6 +12,9 @@ public:
     // Save full virtual screen to BMP file. Returns true on success.
     bool take(const std::string& filename);
 
+    // Capture the screen and return buffer of BMPS
+    std::string captureToBuffer();
+
 private:
     static bool SaveBitmapToBMPFile(HBITMAP hBitmap, const std::string& filename);
 };
