@@ -126,8 +126,9 @@ std::optional<int> ApplicationManager::startApplicationWindows(const std::wstrin
     ZeroMemory(&si, sizeof(si));
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
+    DWORD creationFlags = CREATE_NEW_CONSOLE;
+    BOOL ok = CreateProcessW(nullptr, cmdBuf.data(), nullptr, nullptr, FALSE, creationFlags, nullptr, nullptr, &si, &pi);
 
-    BOOL ok = CreateProcessW(nullptr, cmdBuf.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
     if (!ok) {
         return std::nullopt;
     }
