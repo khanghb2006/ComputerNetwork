@@ -1,7 +1,7 @@
 // C:\server\client\script.js
 
 // LƯU Ý: Đảm bảo cổng này khớp với Terminal Server (8081)
-const WEB_SOCKET_URL = `ws://127.0.0.1:8081`; 
+const WEB_SOCKET_URL = `ws://127.0.0.1:8081`; // Máy nạn nhân
 
 const appTableBody = document.querySelector('#app-table tbody'); 
 const screenshotViewer = document.getElementById('screenshot-viewer'); 

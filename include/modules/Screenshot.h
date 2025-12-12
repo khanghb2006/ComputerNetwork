@@ -9,10 +9,10 @@ class Screenshot {
 public:
     Screenshot() = default;
 
-    // Save full virtual screen to BMP file. Returns true on success.
+    // Lưu tất cả ảnh chụp màn hình thành BMP file
     bool take(const std::string& filename);
 
-    // Capture the screen and return buffer of BMPS
+    // Cap màn hình và return buffer của BMPs
     std::string captureToBuffer();
 
 private:

@@ -7,7 +7,7 @@ const path = require('path');
 const WEB_PORT = 3000;       
 const WS_PORT = 8081;        
 const CPP_PORT = 8888;       
-const CPP_HOST = '127.0.0.1';
+const CPP_HOST = '10.29.66.11'; // Máy nạn nhân
 
 // ================= 1. SETUP WEB SERVER (EXPRESS) =================
 const app = express();

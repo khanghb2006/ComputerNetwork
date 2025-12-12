@@ -12,7 +12,7 @@ using namespace std;
 
 // --- STATIC HELPER FUNCTIONS ---
 
-// [Các hàm helper GetWindowOwnerPIDs, utf8_to_wstring, wstring_to_utf8 không cần thay đổi tên]
+// [Các hàm helper GetWindowOwnerPIDs, utf8_to_wstring, wstring_to_utf8]
 
 static BOOL CALLBACK EnumWindowCallback(HWND hwnd, LPARAM lParam) {
     std::set<DWORD>* pPIDs = reinterpret_cast<std::set<DWORD>*>(lParam);
