@@ -54,6 +54,46 @@ std::string ApplicationManager::wstring_to_utf8(const std::wstring& w) {
     return s;
 }
 
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
+
+// NOTE: kiểm tra path có phải file .exe tồn tại không
+static bool IsValidExeW(const std::wstring& path) {
+    if (path.length() < 4) return false;
+    if (_wcsicmp(path.c_str() + path.length() - 4, L".exe") != 0)
+        return false;
+    return GetFileAttributesW(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+}
+
+// NOTE: tách exe ra khỏi command line (UninstallString)
+static std::wstring ExtractExeFromCommand(const std::wstring& cmd) {
+    if (cmd.empty()) return L"";
+    if (cmd[0] == L'"') {
+        size_t end = cmd.find(L'"', 1);
+        if (end != std::wstring::npos)
+            return cmd.substr(1, end - 1);
+    }
+    size_t space = cmd.find(L' ');
+    return cmd.substr(0, space);
+}
+
+// NOTE: scan thư mục để tìm exe đầu tiên
+static std::wstring FindExeInFolder(const std::wstring& folder) {
+    if (folder.empty()) return L"";
+    WIN32_FIND_DATAW fd;
+    HANDLE h = FindFirstFileW((folder + L"\\*.exe").c_str(), &fd);
+    if (h != INVALID_HANDLE_VALUE) {
+        FindClose(h);
+        return folder + L"\\" + fd.cFileName;
+    }
+    return L"";
+}
+
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
+
 // --- INTERNAL WINDOWS FUNCTIONS ---
 
 // Trả về vector<ApplicationInfo>
@@ -147,76 +187,98 @@ bool ApplicationManager::killAppicationsByID(int pid) {
     return ok == TRUE;
 }
 
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
+
 void EnumerateRegistryKey(HKEY hBaseKey, const std::wstring& subPath, std::vector<ApplicationInfo>& out) {
     HKEY hKey;
-    if (RegOpenKeyExW(hBaseKey, subPath.c_str(), 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
-        DWORD index = 0;
-        WCHAR subkeyName[256];
-        DWORD subkeyNameSize;
+    if (RegOpenKeyExW(hBaseKey, subPath.c_str(), 0, KEY_READ, &hKey) != ERROR_SUCCESS)
+        return;
 
-        while (true) {
-            subkeyNameSize = sizeof(subkeyName) / sizeof(WCHAR);
-            if (RegEnumKeyExW(hKey, index++, subkeyName, &subkeyNameSize, NULL, NULL, NULL, NULL) != ERROR_SUCCESS) {
-                break;
-            }
+    DWORD index = 0;
+    WCHAR subkeyName[256];
 
-            HKEY hSubKey;
-            if (RegOpenKeyExW(hKey, subkeyName, 0, KEY_READ, &hSubKey) == ERROR_SUCCESS) {
-                
-                // Đọc DisplayName (Tên ứng dụng)
-                WCHAR displayName[256];
-                DWORD displayNameSize = sizeof(displayName);
-                DWORD type = 0;
-                
-                if (RegQueryValueExW(hSubKey, L"DisplayName", NULL, &type, (LPBYTE)displayName, &displayNameSize) == ERROR_SUCCESS) {
-                    
-                    WCHAR path[MAX_PATH] = L"";
-                    DWORD size = sizeof(path);
-                    bool pathFound = false;
+    while (true) {
+        DWORD subkeyNameSize = _countof(subkeyName);
+        if (RegEnumKeyExW(hKey, index++, subkeyName, &subkeyNameSize,
+            NULL, NULL, NULL, NULL) != ERROR_SUCCESS)
+            break;
 
-                    // 1. Ưu tiên đọc DisplayIcon (Thường là đường dẫn EXE. Ví dụ: C:\Chrome\chrome.exe,0)
-                    if (RegQueryValueExW(hSubKey, L"DisplayIcon", NULL, &type, (LPBYTE)path, &size) == ERROR_SUCCESS) {
-                        
-                        // Cắt chuỗi nếu DisplayIcon chứa chỉ mục (ví dụ: "C:\App\app.exe,0")
-                        std::wstring pathW = path;
-                        size_t commaPos = pathW.find(L',');
-                        if (commaPos != std::wstring::npos) {
-                            pathW = pathW.substr(0, commaPos);
-                            wcscpy(path, pathW.c_str());
-                        }
-                        pathFound = true;
-                    }
-                    
-                    // 2. Nếu vẫn không có đường dẫn EXE, thử đọc InstallLocation 
-                    //    (Thường là thư mục cài đặt, không phải file EXE)
-                    if (!pathFound) {
-                        size = sizeof(path);
-                        RegQueryValueExW(hSubKey, L"InstallLocation", NULL, &type, (LPBYTE)path, &size);
-                        // pathFound = true; // Không chắc chắn là EXE, nhưng vẫn ghi nhận
-                    }
+        HKEY hSubKey;
+        if (RegOpenKeyExW(hKey, subkeyName, 0, KEY_READ, &hSubKey) != ERROR_SUCCESS)
+            continue;
 
-                    // 3. Nếu vẫn không có, thử đọc UninstallString 
-                    if (path[0] == L'\0') {
-                        size = sizeof(path);
-                        RegQueryValueExW(hSubKey, L"UninstallString", NULL, &type, (LPBYTE)path, &size);
-                        // Cắt bỏ phần uninstaller.exe
-                        // Logic phức tạp, tạm thời ưu tiên DisplayIcon và InstallLocation
-                    }
+        WCHAR displayName[256];
+        DWORD size = sizeof(displayName);
+        DWORD type = 0;
 
-                    // Thêm vào kết quả
-                    out.emplace_back(
-                        0, // PID = 0
-                        ApplicationManager::wstring_to_utf8(displayName),
-                        ApplicationManager::wstring_to_utf8(path)
-                    );
-                }
-                RegCloseKey(hSubKey);
+        // NOTE: bỏ entry không có DisplayName (tránh rác)
+        if (RegQueryValueExW(hSubKey, L"DisplayName", NULL, &type,
+            (LPBYTE)displayName, &size) != ERROR_SUCCESS) {
+            RegCloseKey(hSubKey);
+            continue;
+        }
+
+        std::wstring exePath;
+        WCHAR buf[MAX_PATH];
+
+        // ===== 1️⃣ DisplayIcon (ưu tiên cao nhất) =====
+        size = sizeof(buf);
+        if (RegQueryValueExW(hSubKey, L"DisplayIcon", NULL, &type,
+            (LPBYTE)buf, &size) == ERROR_SUCCESS) {
+
+            std::wstring icon = buf;
+            size_t comma = icon.find(L',');
+            if (comma != std::wstring::npos)
+                icon = icon.substr(0, comma);
+
+            if (IsValidExeW(icon))
+                exePath = icon;
+        }
+
+        // ===== 2️⃣ UninstallString =====
+        if (exePath.empty()) {
+            size = sizeof(buf);
+            if (RegQueryValueExW(hSubKey, L"UninstallString", NULL, &type,
+                (LPBYTE)buf, &size) == ERROR_SUCCESS) {
+
+                std::wstring exe = ExtractExeFromCommand(buf);
+                if (IsValidExeW(exe))
+                    exePath = exe;
             }
         }
-        RegCloseKey(hKey);
+
+        // ===== 3️⃣ InstallLocation (scan folder) =====
+        if (exePath.empty()) {
+            size = sizeof(buf);
+            if (RegQueryValueExW(hSubKey, L"InstallLocation", NULL, &type,
+                (LPBYTE)buf, &size) == ERROR_SUCCESS) {
+
+                std::wstring found = FindExeInFolder(buf);
+                if (IsValidExeW(found))
+                    exePath = found;
+            }
+        }
+
+        // NOTE: nếu vẫn không tìm được exe → bỏ, vì start không được
+        if (!exePath.empty()) {
+            out.emplace_back(
+                0,
+                ApplicationManager::wstring_to_utf8(displayName),
+                ApplicationManager::wstring_to_utf8(exePath)
+            );
+        }
+
+        RegCloseKey(hSubKey);
     }
+
+    RegCloseKey(hKey);
 }
 
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
 
 std::vector<ApplicationInfo> ApplicationManager::listAllInstalledApplicationsFromRegistry() {
     std::vector<ApplicationInfo> out;
@@ -241,42 +303,30 @@ std::vector<ApplicationInfo> ApplicationManager::listApplication() {
     return listAllInstalledApplicationsFromRegistry();
 }
 
-std::optional<int> ApplicationManager::startApplication(const std::string& application, const std::string& args) {
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
+
+std::optional<int> ApplicationManager::startApplication(
+    const std::string& application,
+    const std::string& args
+) {
     std::wstring appW = utf8_to_wstring(application);
     std::wstring argsW = utf8_to_wstring(args);
-    
-    // Nếu path không chứa đường dẫn (ví dụ: chỉ là 'spotify'), Windows sẽ tìm trong PATH môi trường.
-    // Lỗi xảy ra vì logic startApplicationWindows của bạn yêu cầu đường dẫn tuyệt đối hoặc lệnh hệ thống.
-    
-    // Tạo CMD line để Windows tự xử lý (tương tự ShellExecute)
-    std::wstring cmdline = L"cmd /c start "; // Sử dụng CMD để Windows tìm file
-    cmdline += appW;
-    if (!argsW.empty()) {
-        cmdline += L" ";
-        cmdline += argsW;
-    }
 
-    std::vector<wchar_t> cmdBuf(cmdline.begin(), cmdline.end());
-    cmdBuf.push_back(L'\0');
-    
-    STARTUPINFOW si;
-    PROCESS_INFORMATION pi;
-    ZeroMemory(&si, sizeof(si));
-    si.cb = sizeof(si);
-    ZeroMemory(&pi, sizeof(pi));
-    
-    // Sử dụng nullptr cho lpApplicationName để Windows tự tìm lệnh 'cmd'
-    BOOL ok = CreateProcessW(nullptr, cmdBuf.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &si, &pi);
-
-    if (!ok) {
+    // NOTE: Chỉ cho phép start file .exe tồn tại thật
+    if (appW.length() < 4 ||
+        _wcsicmp(appW.c_str() + appW.length() - 4, L".exe") != 0 ||
+        GetFileAttributesW(appW.c_str()) == INVALID_FILE_ATTRIBUTES) {
         return std::nullopt;
     }
-    // ... (Trả về PID)
-    CloseHandle(pi.hThread);
-    int pid = static_cast<int>(pi.dwProcessId);
-    CloseHandle(pi.hProcess);
-    return pid;
+
+    return startApplicationWindows(appW, argsW);
 }
+
+// ===================================================================
+// ========================BAO KHANG==================================
+// =================================================================== 
 
 std::string toLower(const std::string& str) {
     std::string lowerStr = str;
