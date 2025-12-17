@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ratUS | Remote Control</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <a href="index.html" class="brand">
+            <i class="fa-solid fa-terminal" style="margin-right: 8px;"></i> ratUS
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-item active">Home</a>
+            <a href="about.html" class="nav-item">About</a>
+            <a href="contact.html" class="nav-item">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <main class="hero-container">
+        <h1 class="hero-title glitch" data-text="ACCESS GRANTED">ACCESS GRANTED</h1>
+        <h2 class="hero-subtitle glitch-sub" data-text="OPERATOR: 24CNTN">OPERATOR: 24CNTN</h2>
+        
+        <p class="hero-subtitle">
+            The system is now linked through an active socket connection. <br> 
+            Remote instructions are received, processed, and executed without local intervention.
+        </p>
+        
+        <div style="display: flex; gap: 20px; z-index: 10;">
+            <a href="console.html" class="btn btn-primary">
+                Launch Console <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="about.html" class="btn btn-ghost">
+                RATUS Core
+            </a>
+        </div>
+    </main>
+
+    <script src="js/transition.js"></script>
+    <script src="js/hacker-effect.js"></script> 
+</body>
+</html>

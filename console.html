@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RATUS | Command Center</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body class="console-body">
+
+    <canvas id="matrix-bg"></canvas>
+
+    <header class="console-header">
+        <div class="brand-area">
+            <i class="fa-solid fa-terminal brand-icon"></i>
+            <span class="brand-text">ratUS <span class="brand-divider">|</span> Remote Admin Control</span>
+        </div>
+        
+        <div class="status-area">
+            <div id="status" class="status-badge disconnected">
+                <span class="status-dot"></span>
+                <span class="status-text">Disconnected</span>
+            </div>
+            
+            <div class="divider-vertical"></div>
+
+            <a href="index.html" class="btn-exit">
+                <i class="fa-solid fa-right-from-bracket"></i> Exit Console
+            </a>
+        </div>
+    </header>
+
+    <div class="console-layout">
+        
+        <aside class="console-sidebar">
+            <div class="sidebar-menu">
+                <div class="menu-category">MODULES</div>
+                
+                <button class="nav-btn active" onclick="switchTab('app')">
+                    <i class="fa-solid fa-layer-group"></i> 
+                    <span>Applications</span>
+                </button>
+
+                <button class="nav-btn" onclick="switchTab('process')">
+                    <i class="fa-solid fa-microchip"></i> 
+                    <span>Processes</span>
+                </button>
+
+                <button class="nav-btn" onclick="switchTab('keylogger')">
+                    <i class="fa-solid fa-keyboard"></i> 
+                    <span>Keylogger</span>
+                </button>
+
+                <button class="nav-btn" onclick="switchTab('screenshot')">
+                    <i class="fa-solid fa-eye"></i> 
+                    <span>Live Screen</span>
+                </button>
+
+                <button class="nav-btn" onclick="switchTab('webcam')">
+                    <i class="fa-solid fa-video"></i> 
+                    <span>Webcam Stream</span>
+                </button>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="menu-category">DANGER ZONE</div>
+                <button class="nav-btn danger-btn" onclick="switchTab('system')">
+                    <i class="fa-solid fa-power-off"></i> 
+                    <span>System Power</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="console-main">
+            
+            <div id="app" class="content-view active">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-layer-group"></i> Application Manager</h2>
+                    <div class="panel-controls">
+                        <button class="btn-icon" onclick="listApp()"><i class="fa-solid fa-rotate"></i> Refresh List</button>
+                    </div>
+                </div>
+
+                <div class="split-view">
+                    <div class="control-panel glass-card">
+                        <h3>Operations</h3>
+                        <div class="input-group">
+                            <label>Start Application</label>
+                            <div class="flex-row">
+                                <input id="startAppInput" type="text" placeholder="e.g: notepad.exe">
+                                <button class="btn-action primary" onclick="startApp()">Run</button>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label>Kill Application</label>
+                            <button class="btn-action danger full" onclick="stopApp()">
+                                <i class="fa-solid fa-skull"></i> Which one be killed?
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="terminal-window">
+                        <div class="terminal-bar">
+                            <div class="dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="terminal-title">bash -- application-list</span>
+                        </div>
+                        <div class="terminal-body">
+                            <pre id="appList">Waiting for fetch command...</pre>
+                            <div class="terminal-divider"></div>
+                            <pre id="appLog" class="log-stream">System Ready...</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="process" class="content-view">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-microchip"></i> Process Manager</h2>
+                    <button class="btn-icon" onclick="listProc()"><i class="fa-solid fa-rotate"></i> Refresh List</button>
+                </div>
+
+                <div class="split-view">
+                    <div class="control-panel glass-card" style="height: fit-content;">
+                        <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 20px;">
+                            <div style="background: rgba(129, 140, 248, 0.1); padding: 12px; border-radius: 10px; border: 1px solid rgba(129, 140, 248, 0.2);">
+                                <i class="fa-solid fa-microchip" style="font-size: 1.5rem; color: var(--secondary);"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem; color: white;">Thread Control</h3>
+                                <p style="margin: 5px 0 0; font-size: 0.75rem; color: var(--text-muted);">System Task Manager</p>
+                            </div>
+                        </div>
+
+                        <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.1); margin-bottom: 20px;">
+
+                        <div style="margin-bottom: 25px;">
+                            <label style="font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 8px;">
+                                Current Status
+                            </label>
+                            <div style="display: flex; align-items: center; gap: 10px; color: var(--success); font-family: 'JetBrains Mono'; font-size: 0.85rem; background: rgba(34, 197, 94, 0.05); padding: 10px; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.1);">
+                                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                                <span>LIVE_MONITORING...</span>
+                            </div>
+                        </div>
+
+                        <label style="font-size: 0.7rem; color: var(--text-muted); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 10px;">
+                            Override Action
+                        </label>
+                        <button class="btn-action danger full" onclick="stopProc()">
+                            <i class="fa-solid fa-skull-crossbones"></i> TERMINATE PID
+                        </button>
+                    </div>
+
+                    <div class="terminal-window full-height">
+                        <div class="terminal-bar">
+                            <div class="dots"><span class="dot red"></span><span class="dot yellow"></span></div>
+                            <span class="terminal-title">tasklist.exe</span>
+                        </div>
+                        <pre id="procList" class="terminal-body">Waiting for data...</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div id="keylogger" class="content-view">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-keyboard"></i> Keylogger Dump</h2>
+                    <div class="status-indicator live">REC</div>
+                </div>
+
+                <div class="keylogger-grid">
+                    <div class="control-bar glass-card">
+                        <button class="btn-action success" onclick="startKeylogger()">
+                            <i class="fa-solid fa-play"></i> Start Capture
+                        </button>
+                        <button class="btn-action danger" onclick="stopKeylogger()">
+                            <i class="fa-solid fa-stop"></i> Stop
+                        </button>
+                        <button class="btn-action primary" onclick="getKeylog()">
+                            <i class="fa-solid fa-download"></i> Fetch Log
+                        </button>
+                    </div>
+
+                    <div class="terminal-window" style="flex-grow: 1;">
+                        <div class="terminal-bar">
+                            <span class="terminal-title">keystrokes.log</span>
+                        </div>
+                        <div id="keylog_output" class="terminal-body type-writer">
+                            _ No data captured yet.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="screenshot" class="content-view">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-desktop"></i> Remote Desktop</h2>
+                    <button class="btn-action primary" onclick="Screenshoot()">
+                        <i class="fa-solid fa-camera"></i> Capture Frame
+                    </button>
+                </div>
+
+                <div class="screen-frame">
+                    <img id="screenshotImg" src="" alt="">
+                    <div class="no-signal">
+                        <i class="fa-solid fa-satellite-dish"></i>
+                        <span>WAITING FOR SIGNAL</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="webcam" class="content-view">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-video"></i> Webcam Surveillance</h2>
+                </div>
+                
+                <div class="webcam-container glass-card">
+                    <div class="video-wrapper">
+                        <video id="videoPlayer" controls width="100%">
+                            <source src="http://127.0.0.1:8080/video/test.mp4" type="video/mp4">
+                            Browser not supported
+                        </video>
+                    </div>
+                    <div class="webcam-controls">
+                        <button class="btn-action danger" onclick="startWebcam()">
+                            <i class="fa-solid fa-circle"></i> REC
+                        </button>
+                        <button id="downloadBtn" class="btn-action ghost" onclick="downloadVideo()" disabled>
+                            <i class="fa-solid fa-file-arrow-down"></i> Save Footage
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="system" class="content-view">
+                <div class="panel-header">
+                    <h2><i class="fa-solid fa-bolt"></i> System Power Control</h2>
+                </div>
+
+                <div class="power-grid">
+                    <div class="power-card restart">
+                        <div class="icon-box"><i class="fa-solid fa-rotate-right"></i></div>
+                        <h3>Restart</h3>
+                        <p>Restart the remote machine immediately.</p>
+                        <button class="btn-glow green" onclick="restart()">RESTARTING...</button>
+                    </div>
+
+                    <div class="power-card shutdown">
+                        <div class="icon-box"><i class="fa-solid fa-power-off"></i></div>
+                        <h3>Shutdown</h3>
+                        <p>Power off the remote machine permanently.</p>
+                        <button class="btn-glow red" onclick="shutdown()">GOODBYE...</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="js/websocket.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/command.js"></script>
+    <script src="js/hacker-effect.js"></script>
+    <script src="js/transition.js"></script>
+</body>
+</html>
