@@ -149,3 +149,44 @@ function renderImage(base64) {
     img.src = `data:${mime};base64,${base64}`;
     img.style.display = "block";
 }
+
+// Hàm ẩn/hiện bảng chọn IP
+function showIPSelector() {
+    document.getElementById("ip-selector-overlay").classList.remove("hidden");
+}
+
+function connectToAgent() {
+    const selectedIP = document.getElementById("targetSelect").value;
+    const port = document.getElementById("portInput").value;
+    
+    if(!selectedIP) {
+        alert("ACCESS DENIED: Please select a target agent first.");
+        return;
+    }
+
+    // Giả lập kết nối
+    console.log(`Connecting to ${selectedIP}:${port}...`);
+    
+    // Hiệu ứng ẩn overlay chuyên nghiệp
+    document.getElementById("ip-selector-overlay").classList.add("hidden");
+    
+    // Gọi hàm setStatus của bạn để hiện "Connected"
+    if (typeof setStatus === "function") setStatus(true);
+}
+
+// Giả lập Scan mạng
+function scanNetwork() {
+    const btn = document.querySelector(".btn-scan");
+    const select = document.getElementById("targetSelect");
+    
+    btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> SCANNING';
+    
+    setTimeout(() => {
+        select.innerHTML = `
+            <option value="192.168.1.15">192.168.1.15 [WIN-DESKTOP-01]</option>
+            <option value="192.168.1.24">192.168.1.24 [VICTIM-PC-OFFICE]</option>
+            <option value="127.0.0.1">127.0.0.1 [LOCAL-HOST]</option>
+        `;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> DONE';
+    }, 1500);
+}

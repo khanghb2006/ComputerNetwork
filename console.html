@@ -8,7 +8,44 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 </head>
 <body class="console-body">
+    <div id="ip-selector-overlay" class="target-overlay">
+        <div class="glass-card ip-selector-card">
+            <div class="card-glow"></div>
+            <div class="selector-header">
+                <i class="fa-solid fa-shield-halved pulse-icon"></i>
+                <h2>WANNA TRY RATUS?</h2>
+                <p>Scanning network for active RATUS agents...</p>
+            </div>
 
+            <div class="selector-body">
+                <div class="input-field-group">
+                    <label><i class="fa-solid fa-network-wired"></i> BASE IP RANGE</label>
+                    <div class="ip-input-wrapper">
+                        <input type="text" id="ipRangeInput" value="192.168.1." placeholder="192.168.1.">
+                        <button class="btn-scan" onclick="scanNetwork()">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i> SCAN
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-field-group">
+                    <label><i class="fa-solid fa-crosshairs"></i> SELECT TARGET AGENT</label>
+                    <select id="targetSelect" class="cyber-select">
+                        <option value="">-- No Targets Detected --</option>
+                    </select>
+                </div>
+
+                <div class="input-field-group">
+                    <label><i class="fa-solid fa-plug"></i> PORT</label>
+                    <input type="text" id="portInput" value="9888">
+                </div>
+
+                <button class="btn-connect-main" onclick="connectToAgent()">
+                    <i class="fa-solid fa-link"></i> ESTABLISH CONNECTION
+                </button>
+            </div>
+        </div>
+    </div>
     <canvas id="matrix-bg"></canvas>
 
     <header class="console-header">
@@ -25,8 +62,12 @@
             
             <div class="divider-vertical"></div>
 
+            <button class="btn-switch-agent" onclick="showIPSelector()">
+                <i class="fa-solid fa-tower-broadcast"></i> Switch Agent
+            </button>
+
             <a href="index.html" class="btn-exit">
-                <i class="fa-solid fa-right-from-bracket"></i> Exit Console
+                <i class="fa-solid fa-right-from-bracket"></i> Exit 
             </a>
         </div>
     </header>
