@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us | RATUS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="brand">
+            <i class="fa-solid fa-terminal" style="margin-right: 8px;"></i> ratUS
+        </a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-item">Home</a>
+            <a href="about.html" class="nav-item active">About</a>
+            <a href="contact.html" class="nav-item">Contact</a>
+        </div>
+    </nav>
+
+    <canvas id="matrix-bg" style="opacity: 0.08;"></canvas>
+
+    <div class="page-container">
+        
+        <header style="text-align: center; margin-bottom: 80px; display: flex; flex-direction: column; align-items: center;" class="reveal">
+            <h1 class="hero-title liquid-text" style="font-size: 4.5rem; margin-bottom: 20px;">
+                RATUS KERNEL
+            </h1>
+            <p class="cinematic-text">
+                Initializing communication pipelines to support real-time monitoring and command coordination between the central console and remote agents...
+            </p>
+        </header>
+
+        <section class="section-block reveal">
+            <div class="section-header">
+                <h2 class="section-title">Project Overview</h2>
+                <span class="section-line"></span>
+            </div>
+            
+            <div class="overview-card">
+                <div class="glow-effect"></div> <h3>The RATUS </h3>
+                <p class="overview-desc">
+                    This website acts as the final-term project for the Computer Networks course at Ho Chi Minh Univerity of Science (24CNTN). 
+                    It implements a Remote Administration System using a Client–Server architecture, where the Client acts as a controlled agent and the Server serves as a centralized administration console. The project emphasizes socket-based communication, real-time data exchange, and practical application of core networking principles.
+                </p>
+                
+                <div class="tech-stack-row">
+                    <div class="tech-badge"><i class="fa-brands fa-windows"></i> C++ Winsock</div>
+                    <div class="tech-badge"><i class="fa-brands fa-node-js"></i> NodeJS Relay</div>
+                    <div class="tech-badge"><i class="fa-brands fa-js"></i> WebSocket</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-block reveal">
+            <div class="section-header">
+                <h2 class="section-title">The RATers</h2>
+                <span class="section-line"></span>
+            </div>
+
+            <div class="grid-cards">
+                <div class="dev-card">
+                    <span class="role">FULL-STACK RATER</span>
+                    <h3 class="dev-name">Phạm Minh Đạt</h3>
+                    <div class="dev-info">
+                        <span>24CNTN - HCMUS</span>
+                        <span>ID: 24120174</span>
+                    </div>
+                    <p class="dev-desc">
+                        Co-developed the RATUS core engine, socket architecture, and full-stack integration. Specifically responsible for the <strong>Application Manager</strong> and high-speed <strong>Screen Capture</strong> protocol.
+                    </p>
+                </div>
+                
+                <div class="dev-card">
+                    <span class="role">FULL-STACK RATER</span>
+                    <h3 class="dev-name">Nguyễn Phước Khang</h3>
+                    <div class="dev-info">
+                        <span>24CNTN - HCMUS</span>
+                        <span>ID: 24120189</span>
+                    </div>
+                    <p class="dev-desc">
+                        Co-developed the RATUS core engine, socket architecture, and full-stack integration. Specifically responsible for the <strong>Process Manager</strong> and advanced <strong>Keylogger</strong> algorithms.
+                    </p>
+                </div>
+
+                <div class="dev-card">
+                    <span class="role">FULL-STACK RATER</span>
+                    <h3 class="dev-name">Huỳnh Bảo Khang</h3>
+                    <div class="dev-info">
+                        <span>24CNTN - HCMUS</span>
+                        <span>ID: 24120507</span>
+                    </div>
+                    <p class="dev-desc">
+                        Co-developed the RATUS core engine, socket architecture, and full-stack integration. Specifically responsible for the <strong>System Power Control</strong> (Shutdown/Restart) and live <strong>Webcam Streaming</strong>.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-block reveal" style="margin-bottom: 50px;">
+            <div class="section-header">
+                <h2 class="section-title">Instructor</h2>
+                <span class="section-line"></span>
+            </div>
+            <div class="dev-card" style="max-width: 500px; border-color: rgba(234, 179, 8, 0.3);">
+                <span class="role" style="color: #facc15;">Mentor / Faculty</span>
+                <h3 class="dev-name">MSc. Đỗ Hoàng Cường</h3>
+                <p class="dev-desc" style="margin-top: 10px;">
+                    Faculty of Information Technology - HCMUS
+                </p>
+            </div>
+        </section>
+
+    </div>
+
+    <script src="js/transition.js"></script>
+    <script src="js/hacker-effect.js"></script> <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                    }
+                });
+            }, { threshold: 0.1 }); // Hiện khi lướt tới 10% thẻ
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+</html>

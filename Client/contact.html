@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact | RATUS</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="index.html" class="brand holo-scan"><i class="fa-solid fa-terminal" style="margin-right: 8px;"></i> ratUS</a>
+        <div class="nav-links">
+            <a href="index.html" class="nav-item">Home</a>
+            <a href="about.html" class="nav-item">About Team</a>
+            <a href="contact.html" class="nav-item active">Contact</a>
+        </div>
+    </nav>
+
+    <div class="page-container" style="display: flex; align-items: center; justify-content: center;">
+        <div class="card" style="text-align: center; max-width: 700px; padding: 50px; width: 100%;">
+            
+            <i class="fa-solid fa-paper-plane" style="font-size: 3rem; color: var(--primary); margin-bottom: 20px;"></i>
+            
+            <h2 style="margin-bottom: 20px;">Get in Touch</h2>
+            
+            <p style="margin-bottom: 40px; color: var(--text-muted); line-height: 1.6;">
+                We are three students from the 2024 Talented Program (24CNTN) at Ho Chi Minh University of Science. <br>
+                If you have any feedback regarding the <strong>RATUS / Computer Network</strong> project, please contact us.
+            </p>
+            
+            <div class="contact-grid">
+                
+                <div class="expand-wrapper">
+                    <button class="expand-trigger" onclick="toggleExpand(this)">
+                        <span><i class="fa-brands fa-github"></i> GitHub</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </button>
+                    
+                    <div class="expand-content">
+                        <a href="https://github.com/b0bah0l1c" target="_blank" class="expand-item" style="--i:0;">
+                            <span>Phạm Minh Đạt</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                        <a href="https://github.com/Kh4nq" target="_blank" class="expand-item" style="--i:1;">
+                            <span>Nguyễn Phước Khang</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                        <a href="https://github.com/khanghb2006" target="_blank" class="expand-item" style="--i:2;">
+                            <span>Huỳnh Bảo Khang</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="expand-wrapper">
+                    <button class="expand-trigger" onclick="toggleExpand(this)">
+                        <span><i class="fa-brands fa-facebook"></i> Facebook</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </button>
+                    
+                    <div class="expand-content">
+                        <a href="https://www.facebook.com/bobaholic.5766/" target="_blank" class="expand-item" style="--i:0;">
+                            <span>Phạm Minh Đạt</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                        <a href="https://www.facebook.com/phuockhang.nguyen.121" target="_blank" class="expand-item" style="--i:1;">
+                            <span>Nguyễn Phước Khang</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                        <a href="https://www.facebook.com/khanghb2006" target="_blank" class="expand-item" style="--i:2;">
+                            <span>Huỳnh Bảo Khang</span> <i class="fa-solid fa-arrow-up-right-from-square icon-small"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="expand-wrapper">
+                    <button class="expand-trigger" onclick="toggleExpand(this)">
+                        <span><i class="fa-solid fa-envelope"></i> Outlook</span>
+                        <i class="fa-solid fa-chevron-down arrow"></i>
+                    </button>
+                    
+                    <div class="expand-content">
+                        <a href="mailto:24120174@student.hcmus.edu.vn" class="expand-item" style="--i:0;">
+                            <span>Phạm Minh Đạt</span>
+                        </a>
+                        <a href="mailto:24120189@student.hcmus.edu.vn" class="expand-item" style="--i:1;">
+                            <span>Nguyễn Phước Khang</span>
+                        </a>
+                        <a href="mailto:24120507@student.hcmus.edu.vn" class="expand-item" style="--i:2;">
+                            <span>Huỳnh Bảo Khang</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script src="js/transition.js"></script>
+    
+    <script>
+        function toggleExpand(btn) {
+            const wrapper = btn.closest('.expand-wrapper');
+            
+            // Đóng các tab khác
+            document.querySelectorAll('.expand-wrapper').forEach(el => {
+                if (el !== wrapper) el.classList.remove('open');
+            });
+
+            // Toggle tab hiện tại
+            wrapper.classList.toggle('open');
+        }
+    </script>
+</body>
+</html>
