@@ -96,8 +96,6 @@ void startHttpServer() {
     }
 }
 
-
-
 int main() {
     WSADATA wsa;
     WSAStartup(MAKEWORD(2, 2), &wsa);

@@ -157,7 +157,7 @@ bool Screenshot::SaveBitmapToBMPFile(HBITMAP hBitmap, const std::string& filenam
     HDC hdc = GetDC(nullptr);
     if (!hdc) return false;
 
-    // Cần DC để dùng GetDIBits
+	// Need DC to use GetDIBits
     HDC memDC = CreateCompatibleDC(hdc);
     if (!memDC) {
         ReleaseDC(nullptr, hdc);
@@ -171,7 +171,7 @@ bool Screenshot::SaveBitmapToBMPFile(HBITMAP hBitmap, const std::string& filenam
     ZeroMemory(&bi, sizeof(bi));
     bi.bmiHeader = bih;
 
-    // Lấy pixel raw từ HBITMAP
+	// get raw pixel data
     if (!GetDIBits(memDC, hBitmap, 0, height, pixels.data(), &bi, DIB_RGB_COLORS)) {
         SelectObject(memDC, oldBmp);
         DeleteDC(memDC);
@@ -179,10 +179,10 @@ bool Screenshot::SaveBitmapToBMPFile(HBITMAP hBitmap, const std::string& filenam
         return false;
     }
 
-    // --- Ghi ra file ---
+    // write file
     std::ofstream ofs(filename, std::ios::binary);
     if (!ofs) {
-        // Lỗi khi mở file
+        // cannot open file
         SelectObject(memDC, oldBmp);
         DeleteDC(memDC);
         ReleaseDC(nullptr, hdc);

@@ -10,7 +10,7 @@ std::string escapeJson(const std::string& s) {
         if (c == '\\') res += "\\\\";
         else if (c == '"') res += "\\\"";
         else if (c == '\n' || c == '\r') res += " ";
-        else if (c >= 32 && c <= 126) res += c; // Chỉ lấy ký tự in được
+		else if (c >= 32 && c <= 126) res += c; // just get printable characters
         else res += '?';
     }
     return res;
@@ -56,8 +56,6 @@ std::string ApplicationCommand::execute(const std::string& args) {
 			if (path.size()) path += " ";
 			path += buffer;
         }
-        /*ss >> buffer;
-        std::cout << buffer << "\n";*/
         std::cout << "PATH:" << path << "\n";
         auto pidOpt = ApplicationManager::startApplication(path);
         return pidOpt ? "CMD_MSG:Started PID " + std::to_string(*pidOpt) : "CMD_MSG:Start Failed";

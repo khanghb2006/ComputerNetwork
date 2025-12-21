@@ -97,6 +97,5 @@ void sendWsAuto(SOCKET client, WSDataType type, const std::string& payload) {
         break;
     }
 
-    //std::cout << "HEAD: " << msg.substr(0 , 20) << "\n";
     sendWsTextAuto(client, msg);
 }

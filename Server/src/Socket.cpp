@@ -135,7 +135,6 @@ private:
     }
 };
 
-///////////////////SUA CHO NAY NE///////////////////////////
 bool websocketHandshake(SOCKET client, const std::string& request)
 {
     size_t pos = request.find("Sec-WebSocket-Key: ");
@@ -216,7 +215,7 @@ void handleClient(SOCKET client) {
 
         std::cout << "Command received: " << msg << "\n";
 
-        // Logic tách command giữ nguyên của bạn
+		// split msg to command and arguments
         std::stringstream ss(msg);
         std::string msg1 = "", msg2 = "", msg3 = "";
         ss >> msg1 >> msg2;
@@ -228,7 +227,7 @@ void handleClient(SOCKET client) {
         if ((msg1 == "application" || msg1 == "process") && (msg2 == "stop" || msg2 == "start"))
             msg2 = msg2 + ' ' + msg3;
 
-        // Gọi các hàm điều khiển từ AllCommand.cpp
+		// Run the corresponding functions from AllCommand.cpp
         if (msg1 == "webcam")   openWebcam(client, msg2);
         if (msg1 == "restart")  restartPC(client, msg1);
         if (msg1 == "shutdown") shutdownPC(client, msg1);
@@ -245,7 +244,6 @@ void startSocketServer() {
     WSADATA wsaData;
     WSAStartup(MAKEWORD(2, 2), &wsaData);
 
-    // Khai báo biến server ngay tại đây
     SOCKET server = socket(AF_INET, SOCK_STREAM, 0);
     if (server == INVALID_SOCKET) {
         std::cerr << "Tạo socket thất bại\n";
@@ -254,7 +252,7 @@ void startSocketServer() {
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY; // Lắng nghe mọi IP trong LAN
+	addr.sin_addr.s_addr = INADDR_ANY; // Listen on all interfaces
     addr.sin_port = htons(8081);
 
     if (bind(server, (sockaddr*)&addr, sizeof(addr)) == SOCKET_ERROR) {
@@ -267,11 +265,9 @@ void startSocketServer() {
     std::cout << "Server is listening on port 8081 (All interfaces)...\n";
 
     while (true) {
-        // Chấp nhận kết nối mới
+        // Accepts
         SOCKET client = accept(server, nullptr, nullptr);
         if (client != INVALID_SOCKET) {
-            // Tách luồng để mỗi máy khách một thread riêng
-            // Chú ý: Hàm handleClient của bạn phải nhận tham số là (SOCKET client)
             std::thread(handleClient, client).detach();
             std::cout << "New client accepted and detached.\n";
         }

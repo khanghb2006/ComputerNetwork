@@ -5,8 +5,7 @@
 #include <filesystem>
 #include <cstdlib>
 
-bool convertAviToMp4(const std::string& aviPath, const std::string& mp4Path)
-{
+bool convertAviToMp4(const std::string& aviPath, const std::string& mp4Path) {
     if (!std::filesystem::exists(aviPath)) {
         std::cout << "AVI NOT FOUND\n";
         return false;

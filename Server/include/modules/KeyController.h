@@ -5,13 +5,13 @@ class KeyController {
 public:
     static KeyController& getInstance();
 
-    // Bắt đầu bắt phím (auto spawns hook/thread/loop)
+	// start keylogging (auto spawns hook/thread/loop)
     bool startCapture();
 
-    // Dừng bắt phím
+	// stop keylogging
     bool stopCapture();
 
-    // Lấy buffer và clear
+	// get buffer contents and clear internal buffer
     std::string getBufferAndClear();
 private:
     KeyController();

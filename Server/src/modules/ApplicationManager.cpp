@@ -320,11 +320,11 @@ bool ApplicationManager::stopApplication(const std::string& appNameOrPath) {
 
     if (Process32FirstW(snap, &pe)) {
         do {
-            // Lấy Tên file và chuyển sang chữ thường
+			// to lower case current process name
             std::string currentName = wstring_to_utf8(pe.szExeFile);
             std::string lowerCurrentName = toLower(currentName);
 
-            // 1. Logic lấy Full Path
+			// 1. get full path
             std::string currentPath = "[unknown]";
             HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe.th32ProcessID);
 
@@ -337,7 +337,6 @@ bool ApplicationManager::stopApplication(const std::string& appNameOrPath) {
                 CloseHandle(hProcess);
             }
 
-            // Chuyển Path của hệ thống sang chữ thường
 			// covert path to lower case
             std::string lowerCurrentPath = toLower(currentPath);
 

